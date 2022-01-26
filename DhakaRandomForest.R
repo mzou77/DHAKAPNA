@@ -30,9 +30,20 @@ head(df_imps,10)
 # calculates overall importance using random forest
 
 set.seed(123)
-split1 = sort(sample(nrow(complete_dat), nrow(complete_dat) * .7))
-train <- complete_dat[split1,]
-test <- complete_dat[-split1,]
-out=ranger(as.formula(paste(resp_var,'~',paste(names,collapse="+"),sep="")),data=complete_dat,num.trees=1000,importance="impurity")
-df_imps=data.frame(names=names(ranger::importance(out)),imps=ranger::importance(out)) %>% arrange(desc(imps))
+nrows_dat=nrow(complete_dat)
+train=sample(1:nrows_dat,round(.80*nrows_dat))
+train = 1:10 %>% purrr::map(function(x) sample(1:nrows_dat,round(.80*nrows_dat)))
+cv = function(x){ 
+  train=complete_dat[x,]
+  test=complete_dat[-x,] 
+  out=ranger(as.formula(paste(resp_var,'~',paste(names,collapse="+"),sep="")),data=train,num.trees=1000,importance="impurity")
+  df_imps=data.frame(var=names(out$variable.importance),imp=as.numeric(out$variable.importance)) %>% arrange(desc(imp))
+  out=ranger(as.formula(paste(resp_var,'~',paste(df_imps$var[1:5],collapse="+"),sep="")),data=train,num.trees=1000,importance="impurity")
+  pred=predict(out,data=test)$predictions
+  return(pred)
+}                              
+cv_preds=train %>% purrr::map(function(x) cv(x))
+aucs=map2(cv_preds,train, function(x,y) as.numeric(roc(complete_dat[-y,]$treat_fail,x)$auc))                            
+mean(unlist(aucs))
 #creating test and train datasets
+#repeated five fold cross validation
