@@ -4,6 +4,7 @@ library(mice)
 dat <- read_sav("Amoxicillin_Enrollment_Sorted(27.10.2021).sav") # This line loads the .sav file.
 
 dat[,c('DOB', 'DOA', 'DOD', 'age_m', 'age_diff', 'Fast_breath_enrol', 'denial_consent', 'congen_anomaly', 'life_threat', 'any_antibiotic', 'Kitchen_house', 'Yrs_formaleduFather', 'birth_weight', 'Name_matrnlcompli', 'anyInter_jaund', 'before_gmilk', 'BCG_dose', 'Enroll_cough', 'Enroll_rash', 'Enroll_dur_convulsion', 'Enroll_dur_rash', 'Enroll_coryza', 'Enroll_dur_coryza', 'Heart_rate', 'CRT', 'Hypothermia', 'Cyanosis', 'Oral_ulceration', 'Doughy_skin', 'BCG_mark', 'Lymphadeno_pathy', 'Digital_clubbing', 'Parotid_swell', 'RSys_breathsound', 'RSys_central_cyan', 'RSys_trachdevia', 'RSys_plrub','AbdSys_BS')] <- list(NULL) 
+
 #Reduce to 147 variables from 185
 # these variables were excluded primarily because they were > 95% yes or no
 
@@ -31,4 +32,3 @@ dat$Enroll_dur_poor_urin[is.na(dat$Enroll_dur_poor_urin)] <- 0
 imputed_data <- mice(dat, m = 5, method = "rf") #performs imputation
 
 finish_imputed_dat <- complete(imputed_data, 1) #uses first cycle of imputed values to complete dataset
-
