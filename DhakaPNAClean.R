@@ -32,3 +32,4 @@ dat$Enroll_dur_poor_urin[is.na(dat$Enroll_dur_poor_urin)] <- 0
 imputed_data <- mice(dat, m = 5, method = "rf") #performs imputation
 
 finish_imputed_dat <- complete(imputed_data, 1) #uses first cycle of imputed values to complete dataset
+
