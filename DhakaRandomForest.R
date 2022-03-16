@@ -38,9 +38,9 @@ train = 1:10 %>% purrr::map(function(x) sample(1:nrows_dat,round(.80*nrows_dat))
 cv = function(x){ 
   train=complete_dat[x,]
   test=complete_dat[-x,] 
-  out=ranger(as.formula(paste(resp_var,'~',paste(names,collapse="+"),sep="")),data=train,num.trees=1000,importance="impurity")
+  out=ranger(as.formula(paste(resp_var,'~',paste(names,collapse="+"),sep="")),data=train,num.trees=5000,importance="impurity")
   df_imps=data.frame(var=names(out$variable.importance),imp=as.numeric(out$variable.importance)) %>% arrange(desc(imp))
-  out=ranger(as.formula(paste(resp_var,'~',paste(df_imps$var[1:10],collapse="+"),sep="")),data=train,num.trees=1000,importance="impurity")
+  out=ranger(as.formula(paste(resp_var,'~',paste(df_imps$var[1:2],collapse="+"),sep="")),data=train,num.trees=5000,importance="impurity")
   pred=predict(out,data=test)$predictions
   return(pred)
 }                              
@@ -52,7 +52,7 @@ mean(unlist(aucs))
 
 finish_imputed_dat=read.csv('finish_imputed_dat.csv') 
 complete_dat=read.csv('complete_dat.csv')
-names = colnames(complete_dat)[c(3:4, 8:12, 14:15, 17:37, 39:63, 65:127, 129:135, 138:142)]
+names = colnames(complete_dat)[c(4, 8:12, 14:15, 17:37, 39:63, 65:123, 126:127, 129:135, 138:142)]
 cdat=complete_dat %>% select(treat_fail,one_of(names))
 cdat = cdat %>% mutate(treat_fail=as.factor(treat_fail))
 str(cdat)
