@@ -88,43 +88,53 @@ df_imps=data.frame(var=names(rf_imp$values), imps=as.numeric(rf_imp$values)) %>%
 df_imps
 #applies model to entire dataset and extracts list of most important variables  
 
-logistic_model <- glm(treat_fail ~ RSys_grunting + SPO2_withoutO2 + Central_Cyan_enrol + Rectal_tem + Age_father + WAZ + sever_res_enrol + Enroll_dur_poorfeed + RSys_lcwi + Antibiotic_received7days, data=cdat, family = "binomial")
+
+cdat["RSys_grunting"][cdat["RSys_grunting"] == 2] <- 0 #recoding 0 as no, 1 as yes for categorical variables
+cdat["Central_Cyan_enrol"][cdat["Central_Cyan_enrol"] == 2] <- 0
+cdat["sever_res_enrol"][cdat["sever_res_enrol"] == 2] <- 0
+cdat["RSys_lcwi"][cdat["RSys_lcwi"] == 2] <- 0
+logistic_model <- glm(treat_fail ~ RSys_grunting + SPO2_withoutO2 + Rectal_tem + RSys_lcwi + sever_res_enrol + Central_Cyan_enrol + WHZ + WAZ + Enroll_dur_poorfeed + Enroll_MUAC, data=cdat, family = "binomial")
 summary(logistic_model)
 exp(logistic_model$coefficients[-1])
-confint(logistic_model, level=.95)
+confint(logistic_model, level = .95)
 #logistic regression to calculate odd's ratios
 
 pdp1=rf %>% pdp::partial(pred.var="RSys_grunting")
-ggplot(pdp1) + geom_point(aes(x=RSys_grunting,y=1-yhat))  
-#or y=yhat
+ggplot(pdp1) + geom_point(aes(x=RSys_grunting,y=1-yhat)) + ylab("Marginal Predicted Probability") + xlab("Presence of grunting on exam") + xlim("1","2")
 
-#rf=randomForest(I(as.numeric(treat_fail)-1)~.,data=cdat)
+#or y=yhat 
   
 pdp2=rf %>% pdp::partial(pred.var="SPO2_withoutO2")
-ggplot(pdp2,aes(x=SPO2_withoutO2,y=1-yhat)) + geom_point() + geom_line()
+ggplot(pdp2,aes(x=SPO2_withoutO2,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("Room air saturation")
 
 pdp3=rf %>% pdp::partial(pred.var="Central_Cyan_enrol")
-ggplot(pdp3) + geom_point(aes(x=Central_Cyan_enrol,y=1-yhat)) 
+ggplot(pdp3) + geom_point(aes(x=Central_Cyan_enrol,y=1-yhat)) + ylab("Marginal Predicted Probability") + xlab ("Presence of central cyanosis on exam") + xlim("1","2")
 
 pdp4=rf %>% pdp::partial(pred.var="Rectal_tem")
-ggplot(pdp4,aes(x=Rectal_tem,y=1-yhat)) + geom_point() + geom_line()
+ggplot(pdp4,aes(x=Rectal_tem,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("Rectal Temperature in Celsius")
 
 pdp5=rf %>% pdp::partial(pred.var="Age_father")
 ggplot(pdp5,aes(x=Age_father,y=1-yhat)) + geom_point() + geom_line()
 
 pdp6=rf %>% pdp::partial(pred.var="WAZ")
-ggplot(pdp6,aes(x=WAZ,y=1-yhat)) + geom_point() + geom_line()
+ggplot(pdp6,aes(x=WAZ,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("WAZ (SD)")
 
 pdp7=rf %>% pdp::partial(pred.var="sever_res_enrol")
-ggplot(pdp7) + geom_point(aes(x=sever_res_enrol,y=1-yhat))  
+ggplot(pdp7) + geom_point(aes(x=sever_res_enrol,y=1-yhat)) + ylab("Marginal Predicted Probability") +  xlab("Respiratory distress at time of enrollment") + xlim("1", "2")
 
 pdp8=rf %>% pdp::partial(pred.var="Enroll_dur_poorfeed")
-ggplot(pdp8,aes(x=Enroll_dur_poorfeed,y=1-yhat)) + geom_point() + geom_line()
+ggplot(pdp8,aes(x=Enroll_dur_poorfeed,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("Duration of Poor Feeding (Days)") + xlim(0,90)
 
 pdp9=rf %>% pdp::partial(pred.var="RSys_lcwi")
-ggplot(pdp9) + geom_point(aes(x=RSys_lcwi,y=1-yhat)) 
+ggplot(pdp9) + geom_point(aes(x=RSys_lcwi,y=1-yhat)) + ylab("Marginal Predicted Probability") + xlab("Lower chest wall indrawing on exam") + xlim("1", "2")
 
 pdp10=rf %>% pdp::partial(pred.var="Antibiotic_received7days")
 ggplot(pdp10) + geom_point(aes(x=Antibiotic_received7days,y=1-yhat)) 
+
+pdp11=rf %>% pdp::partial(pred.var="WHZ")
+ggplot(pdp11,aes(x=WHZ,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("WHZ")
+
+pdp12=rf %>% pdp::partial(pred.var="Enroll_MUAC")
+ggplot(pdp12,aes(x=Enroll_MUAC,y=1-yhat)) + geom_point() + geom_line() + ylab("Marginal Predicted Probability") + xlab("MUAC (cm)")
 
 #partial dependency plots of top 10 most important predictors
